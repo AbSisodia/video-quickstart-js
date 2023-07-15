@@ -73,6 +73,8 @@ function createMessages(fromName, message) {
   const pre = document.querySelector('pre.language-javascript');
 
   pre.innerHTML = Prism.highlight(snippet, Prism.languages.javascript);
+  const logger = Video.Logger.getLogger('twilio-video');//newly added for console log
+  logger.setLevel('debug');//newly added for console log
 
   // Disabling Submit buttons until after a Participant connects to a room with published data tracks
   P1Submit.disabled = true;
