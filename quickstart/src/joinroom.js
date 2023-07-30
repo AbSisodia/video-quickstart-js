@@ -10,7 +10,7 @@ const $activeVideo = $('video', $activeParticipant);
 const $participants = $('div#participants', $room);
 
 const { takeSnapshot } = require('./helperJs_files/helper_Screenshot');
-const { sharingScreeen } = require('./helperJs_files/helper_Screenshare');
+const { shareScreenHandler } = require('./helperJs_files/helper_Screenshare');
 const { setupDataTrackChat, updateMessageUI } = require('./helperJs_files/helper_Chat_datatrack');
 
 //helper_Chat_datatrack
