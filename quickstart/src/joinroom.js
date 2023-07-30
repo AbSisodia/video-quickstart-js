@@ -9,12 +9,43 @@ const $activeParticipant = $('div#active-participant > div.participant.main', $r
 const $activeVideo = $('video', $activeParticipant);
 const $participants = $('div#participants', $room);
 
+const { takeSnapshot } = require('./helperJs_files/helper_Screenshot');
+const { sharingScreeen } = require('./helperJs_files/helper_Screenshare');
+const { setupDataTrackChat, updateMessageUI } = require('./helperJs_files/helper_Chat_datatrack');
+
+//helper_Chat_datatrack
+//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
+//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
+//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
+//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
+
+
+
+const { LocalDataTrack } = require(`twilio-video`);
+const dataTrack = new LocalDataTrack();
+
 // The current active Participant in the Room.
 let activeParticipant = null;
 
 // Whether the user has selected the active Participant by clicking on
 // one of the video thumbnails.
 let isActiveParticipantPinned = false;
+
+/*-------------------- Start Take Snapshot --------------------------*/
+var snapshotBtn = document.getElementById('takesnapshot');
+snapshotBtn.onclick = function() {
+  takeSnapshot(window.room);
+};
+/*-------------------- End Take Snapshot ---------------------------*/
+
+/*-------------------- Start Screen Share --------------------------*/
+
+var screenShareBtn = document.getElementById('screenShare');
+screenShareBtn.onclick = function() {
+  sharingScreeen(window.room, screenShareBtn);
+};
+
+/*-------------------- End Screen Share ---------------------------*/
 
 /**
  * Set the active Participant's video.
@@ -175,6 +206,16 @@ function participantConnected(participant, room) {
   participant.on('trackPublished', publication => {
     trackPublished(publication, participant);
   });
+
+  participant.on('trackSubscribed', track => {
+    console.log(`Participant "${participant.identity}" added ${track.kind} Track ${track.sid}`);
+    if (track.kind === 'data') {
+      track.on('message', data => {
+        console.log(data);
+        updateMessageUI(data, participant.identity);
+      });
+    }
+  });
 }
 
 /**
@@ -228,6 +269,8 @@ async function joinRoom(token, connectOptions) {
 
   // Join to the Room with the given AccessToken and ConnectOptions.
   const room = await connect(token, connectOptions);
+
+  setupDataTrackChat(dataTrack);
 
   // Save the LocalVideoTrack.
   let localVideoTrack = Array.from(room.localParticipant.videoTracks.values())[0].track;
