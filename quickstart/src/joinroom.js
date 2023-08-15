@@ -10,16 +10,12 @@ const $activeVideo = $('video', $activeParticipant);
 const $participants = $('div#participants', $room);
 
 const { takeSnapshot } = require('./helperJs_files/helper_Screenshot');
-const { sharingScreeen } = require('./helperJs_files/helper_Screenshare');
+//const { sharingScreeen } = require('./helperJs_files/helper_Screenshare');
 const { setupDataTrackChat, updateMessageUI } = require('./helperJs_files/helper_Chat_datatrack');
-
-//helper_Chat_datatrack
+const { shareScreenHandler } = require('./helperJs_files/helper_Screenshare');
+const { muteYourAudio, unmuteYourAudio, muteYourVideo, unmuteYourVideo } = require('./helperJs_files/helper_Audio_Video_Controller');
+const { bandwidthConstraints } = require('./helperJs_files/helper_Bandwidth_Constraints');
 //const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
-//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
-//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
-//const { shareScreenHandler } = require('./helperJs_files/helper_Screenshot');
-
-
 
 const { LocalDataTrack } = require(`twilio-video`);
 const dataTrack = new LocalDataTrack();
@@ -30,6 +26,126 @@ let activeParticipant = null;
 // Whether the user has selected the active Participant by clicking on
 // one of the video thumbnails.
 let isActiveParticipantPinned = false;
+
+/*-------------------- Start Bandwidth Constrants --------------------------*/
+const connectOrDisconnect = document.querySelector('input#connectordisconnect');
+const audioBitrateSelector = document.querySelector('select#maxaudiobitrate');
+const audioPreview = document.querySelector('audio#audiopreview');
+const videoBitrateSelector = document.querySelector('select#maxvideobitrate');
+const videoPreview = document.querySelector('video#videopreview');
+const waveformContainer = document.querySelector('div#audiowaveform');
+
+/*** Connect to or disconnect the Participant with media from the Room. */
+ function connectToOrDisconnectFromRoom(event) {
+  event.preventDefault();
+  return room ? disconnectFromRoom() : connectToRoom();
+}
+/**Connect the Participant with media to the Room. */
+ async function connectToRoom() {
+  const maxAudioBitrate = audioBitrateSelector.value
+    ? Number(audioBitrateSelector.value)
+    : null;
+  const maxVideoBitrate = videoBitrateSelector.value
+    ? Number(videoBitrateSelector.value)
+    : null;
+  const creds = await getRoomCredentials();
+
+  room = await connectWithBandwidthConstraints(
+    creds.token,
+    roomName,
+    maxAudioBitrate,
+    maxVideoBitrate);
+
+    //var bandwidthBtn = document.getElementById("bandwidthBtn");
+    var bandwidthModal = new bootstrap.Modal(document.getElementById("bandwidthModal"));
+    bandwidthBtn.addEventListener("click", function() {
+        bandwidthModal.toggle();
+    });
+    connectOrDisconnect.value = 'Disconnect from Room';
+}
+/* Update bandwidth constraints in the Room. */
+ function updateBandwidthParametersInRoom() {
+  if (!room) {
+    return;
+  }
+  const maxAudioBitrate = audioBitrateSelector.value
+    ? Number(audioBitrateSelector.value)
+    : null;
+  const maxVideoBitrate = videoBitrateSelector.value
+    ? Number(videoBitrateSelector.value)
+    : null;
+  updateBandwidthConstraints(room, maxAudioBitrate, maxVideoBitrate);
+}
+/*** Disconnect the Participant with media from the Room. */
+ function disconnectFromRoom() {
+  room.disconnect();
+  room = null;
+  connectOrDisconnect.value = 'Connect to Room';
+  return;
+}
+
+(async function() {
+  // Load the code snippet.
+  const snippet = await getSnippet('./helpers.js');
+  const pre = document.querySelector('pre.language-javascript');
+  pre.innerHTML = Prism.highlight(snippet, Prism.languages.javascript);
+
+  // Set listeners to the bandwidth selectors.
+  audioBitrateSelector.onchange = updateBandwidthParametersInRoom;
+  videoBitrateSelector.onchange = updateBandwidthParametersInRoom;
+
+  // Set listener to the connect or disconnect button.
+  connectOrDisconnect.onclick = connectToOrDisconnectFromRoom;
+
+  // Set bitrate graphs.
+  startAudioBitrateGraph = setupBitrateGraph('audio', 'audiobitrategraph', 'audiobitratecanvas');
+  startVideoBitrateGraph = setupBitrateGraph('video', 'videobitrategraph', 'videobitratecanvas');
+
+  // Get the credentials to connect to the Room.
+  const creds = await getRoomCredentials();
+
+  // Connect to a random Room with no media. This Participant will
+  // display the media of the second Participant that will enter
+  // the Room with bandwidth constraints.
+  const someRoom = await Video.connect(creds.token, { tracks: [] });
+
+  // Disconnect from the Room on page unload.
+  window.onbeforeunload = function() {
+    if (room) {
+      room.disconnect();
+      room = null;
+    }
+    someRoom.disconnect();
+  };
+
+  // Set the name of the Room to which the Participant that shares
+  // media should join.
+  roomName = someRoom.name;
+
+  // Attach the newly subscribed Track to the DOM and start the bitrate graph.
+  someRoom.on('trackSubscribed', attachTrack.bind(
+    null,
+    audioPreview,
+    videoPreview,
+    startAudioBitrateGraph.bind(null, someRoom),
+    startVideoBitrateGraph.bind(null, someRoom)));
+
+  // Detach the unsubscribed Track from the DOM and stop the bitrate graph.
+  someRoom.on('trackUnsubscribed', detachTrack.bind(
+    null,
+    audioPreview,
+    videoPreview));
+
+  // Detach Participant's Tracks and stop the bitrate graphs upon disconnect.
+  someRoom.on('participantDisconnected', function(participant) {
+    getTracks(participant).forEach(detachTrack.bind(
+      null,
+      audioPreview,
+      videoPreview));
+  });
+}());
+/*-------------------- End Bandwidth Constrants ---------------------------*/
+
 
 /*-------------------- Start Take Snapshot --------------------------*/
 var snapshotBtn = document.getElementById('takesnapshot');
@@ -42,11 +158,33 @@ snapshotBtn.onclick = function() {
 
 var screenShareBtn = document.getElementById('screenShare');
 screenShareBtn.onclick = function() {
-  sharingScreeen(window.room, screenShareBtn);
+  shareScreenHandler(window.room, screenShareBtn);
 };
 
 /*-------------------- End Screen Share ---------------------------*/
 
+/*-------------------- Start Media Controls --------------------------*/
+var muteAudioBtn = document.querySelector('button#muteAudio');
+var muteVideoBtn = document.querySelector('button#muteVideo');
+
+muteAudioBtn.onclick = () => {
+  const mute = !muteAudioBtn.classList.contains('muted');
+  if(mute) {
+    muteYourAudio(room, muteAudioBtn);
+  }else{
+    unmuteYourAudio(room, muteAudioBtn);
+  }
+}
+
+muteVideoBtn.onclick = () => {
+  const mute = !muteVideoBtn.classList.contains('muted');
+  if(mute) {
+    muteYourVideo(room, muteVideoBtn);
+  }else{
+    unmuteYourVideo(room, muteVideoBtn);
+  }
+}
+/*-------------------- End Media Controls --------------------------*/
 /**
  * Set the active Participant's video.
  * @param participant - the active Participant
@@ -271,6 +409,7 @@ async function joinRoom(token, connectOptions) {
   const room = await connect(token, connectOptions);
 
   setupDataTrackChat(dataTrack);
+  bandwidthConstraints(dataTrack);
 
   // Save the LocalVideoTrack.
   let localVideoTrack = Array.from(room.localParticipant.videoTracks.values())[0].track;

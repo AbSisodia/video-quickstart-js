@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="stylesheet" href="index.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+    <!-- Font Awesome script -->
+    <script src="https://kit.fontawesome.com/f3dfe7c826.js" crossorigin="anonymous"></script>
+    <script src="./build/twilio-video-processors.js"></script>
   </head>
   <body>
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
@@ -27,11 +30,25 @@
     <div class="container-fluid">
       <div class="row" id="room">
         <div id="participants" class="col-xs-12 col-sm-3 col-md-2" style="text-align: center"></div>
-        <div id="active-participant" class="col-xs-12 col-sm-9 col-md-10" style="text-align: center">
+        <div id="active-participant" class="col-xs-12 col-sm-9 col-md-10" style="text-align: center"><!--class="col-xs-12 col-sm-9 col-md-10" -->
           <div class="participant main">
             <video autoplay playsinline muted></video>
           </div>
         </div>
+        <!--<div id="active-participant_copy" class="col-xs-12 col-sm-3 col-md-3" style="text-align: left">
+          <div>
+            <button id="chatBtn" class="button-1">Chat</button>
+          </div><br>
+          <div>
+            <button id="screenShare" class="button-1">Share Your Screen</button>
+          </div><br>
+          <div>
+            <button id="takesnapshot" class="button-1">Take a Video Snapshot</button>
+          </div><br>
+          <div>
+            <button id="bandwidthBtn" class="button-1">Bandwidth Constraints</button>
+          </div>
+        </div>-->
       </div>
       <div id="modals">
         <div class="modal fade" id="select-mic" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="select-mic-label" aria-hidden="true">
@@ -147,13 +164,40 @@
         </div>
       </div>
       <!-- End-->
+      
       <!-- Chat, Screen Share and Snapshot, Added by Abhay -->
       <div class="col-12 text-center">
-        <button id="chatBtn" class="btn btn-primary">Chat</button>
+        <!-- HTML !-->
+        <!--<button class="button-1" role="button">Button 90</button>-->
+        <!--Chat button with image-->
+        <!--<button id="chatBtn" class="button-1">
+          <span>
+          <div class="jss156"><svg width="30" height="17" viewBox="0 0 19 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 1C0 0.723858 0.223858 0.5 0.5 0.5H18.5C18.7761 0.5 19 0.723858 19 1V13C19 13.2761 18.7761 13.5 18.5 13.5H9.3096L6.32421 16.361C6.1796 16.4996 5.96624 16.5385 5.78202 16.4599C5.59779 16.3813 5.47826 16.2003 5.47826 16V13.5H0.5C0.223858 13.5 0 13.2761 0 13V1ZM1 1.5V12.5H5.97826C6.2544 12.5 6.47826 12.7239 6.47826 13V14.8283L8.76274 12.639C8.85583 12.5498 8.97977 12.5 9.1087 12.5H18V1.5H1Z" fill="#707578"></path></svg><div class="jss159"></div><div class="jss157"></div></div>
+          Chat
+        </span>
+        </button>-->
+        
         <!--<button id="chatBtn" class="btn" style="border: 1px solid black;"><i class="fa-regular fa-message"></i></button>-->
-        <button id="screenShare" class="btn btn-primary">Share Your Screen</button>
-        <button id="takesnapshot" class="btn btn-primary">Take a Video Snapshot</button>
+        <button id="chatBtn" class="button-1">Chat</button>
+        <button id="screenShare" class="button-1">Share Your Screen</button>
+        <button id="takesnapshot" class="button-1">Take a Video Snapshot</button>
+        <button id="bandwidthBtn" class="button-1">Bandwidth Constraints</button>
         <!-- <button id="bandwidth" class="btn btn-primary">Set Bandwidth Constraints</button> -->
+
+        <!-- Audi/Video controller-->
+        <button id="muteAudio" class="btn" style="background-image: linear-gradient(-180deg, #37ADB2, #329CA0);box-shadow: 0 0 0 0.2rem #fff;"><i class="fa-solid fa-microphone"></i></button>
+        <div class="btn-group">
+          <button id="muteVideo" class="btn" style="background-image: linear-gradient(-180deg, #37ADB2, #329CA0);box-shadow: 0 0 0 0.2rem #fff;"><i class="fa-solid fa-video"></i></button>
+          <!--<button type="button" style="border: 1px solid black;" class="btn btn-dark dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" id="dropdown-nofilter" type="button">No Filter</button>
+            <button class="dropdown-item" id="dropdown-blackAndWhite" type="button">Black and White</button>
+            <button class="dropdown-item" type="button" id="dropdown-blur">Blur</button>
+            <button class="dropdown-item" type="button" id="dropdown-image">Image</button>
+          </div>-->
+        </div>
       </div>
       <!-- End -->
 
@@ -184,6 +228,59 @@
         </div>
       </div>
       <!-- End Chat window -->
+      <!-- Start Bandwidth Constraints window, added by Abhay-->
+      <div class="modal fade" id="bandwidthModal">
+        <div class="modal-dialog">
+          <div class="modal-content col-sm-12">
+            <div class="modal-header">
+              <h4 class="modal-title">Bandwidth Constraints</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Participant's Media</h4>
+                <div id="audiowaveform"></div>
+                <audio id="audiopreview" autoplay></audio>
+                <video id="videopreview" autoplay></video>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Select Bandwidth Constraints</h4>
+                <form>
+                  <div class="form-group">
+                    <label class="form-text text-muted">Max Audio Bitrate (bps)</label>
+                    <select id="maxaudiobitrate" name="maxaudiobitrate" class="form-control">
+                      <option value="">No limit</option>
+                      <option value="16000">16000</option>
+                      <option value="32000">32000</option>
+                      <option value="64000">64000</option>
+                    </select>
+                    <div id="audiobitrategraph" class="bitrategraph">
+                      <canvas id="audiobitratecanvas"></canvas>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-text text-muted">Max Video Bitrate (bps)</label>
+                    <select id="maxvideobitrate" name="maxvideobitrate" class="form-control">
+                      <option value="">No limit</option>
+                      <option value="64000">64000</option>
+                      <option value="128000">128000</option>
+                      <option value="256000">256000</option>
+                      <option value="512000">512000</option>
+                    </select>
+                    <div id="videobitrategraph" class="bitrategraph">
+                      <canvas id="videobitratecanvas"></canvas>
+                    </div>
+                  </div>
+                  <input id="connectordisconnect" type="submit" class="btn btn-primary btn-block" value="Connect to Room">
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Bandwidth Constraints window -->
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>

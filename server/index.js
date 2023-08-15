@@ -51,10 +51,6 @@ app.use('/quickstart', express.static(quickstartPath));
 const examplesPath = path.join(__dirname, '../examples');
 app.use('/examples', express.static(examplesPath));
 
-// Set up the path for the examples page//Added by Abhay
-const examplesPath1 = path.join(__dirname, '../Test_Examples/Example1/public');
-app.use('/Test_Examples', express.static(examplesPath));
-
 /**
  * Default to the Quick Start application.
  */
