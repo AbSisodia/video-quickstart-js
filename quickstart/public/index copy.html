@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Twilio Video QuickStart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+    <!-- Font Awesome script -->
+    <script src="https://kit.fontawesome.com/f3dfe7c826.js" crossorigin="anonymous"></script>
+    <script src="./build/twilio-video-processors.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">
+        <img src="https://www.twilio.com/docs/static/img/wordmark.06c5f14fff7c.svg" width="30" height="30" class="d-inline-block align-top" alt="">
+        <span style="margin: 0 10px">Video Quick Start</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsible-content" aria-controls="collapsible-content" aria-expanded="false" aria-label="Toggle Navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="collapsible-content">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/examples">More Examples</a>
+          </li>
+        </ul>
+        <button class="btn btn-outline-primary" id="leave-room">Leave Room</button>
+      </div>
+    </nav>
+    <div class="container-fluid">
+      <div class="row" id="room">
+        <div id="participants" class="col-xs-12 col-sm-3 col-md-2" style="text-align: center"></div>
+        <div id="active-participant" class="col-xs-12 col-sm-9 col-md-10" style="text-align: center"><!--class="col-xs-12 col-sm-9 col-md-10" -->
+          <div class="participant main">
+            <video autoplay playsinline muted></video>
+          </div>
+        </div>
+        <!--<div id="active-participant_copy" class="col-xs-12 col-sm-3 col-md-3" style="text-align: left">
+          <div>
+            <button id="chatBtn" class="button-1">Chat</button>
+          </div><br>
+          <div>
+            <button id="screenShare" class="button-1">Share Your Screen</button>
+          </div><br>
+          <div>
+            <button id="takesnapshot" class="button-1">Take a Video Snapshot</button>
+          </div><br>
+          <div>
+            <button id="bandwidthBtn" class="button-1">Bandwidth Constraints</button>
+          </div>
+        </div>-->
+      </div>
+      <div id="modals">
+        <div class="modal fade" id="select-mic" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="select-mic-label" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="select-mic-label">Microphone</h5>
+              </div>
+              <div class="modal-body" style="text-align: center">
+                <select style="width: 100%"></select>
+                <svg focusable="false" viewBox="0 0 100 100" aria-hidden="true" height="100" width="100" style="margin: 10px 0">
+                  <defs>
+                    <clipPath id="level-indicator">
+                      <rect x="0" y="100" width="100" height="100" />
+                    </clipPath>
+                  </defs>
+                  <path fill="rgb(220, 220, 220)" d="m52 38v14c0 9.757-8.242 18-18 18h-8c-9.757 0-18-8.243-18-18v-14h-8v14c0 14.094 11.906 26 26 26v14h-17v8h42v-8h-17v-14c14.094 0 26-11.906 26-26v-14h-8z"></path>
+                  <path fill="rgb(220, 220, 220)" d="m26 64h8c5.714 0 10.788-4.483 11.804-10h-11.887v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h11.887c-1.016-5.517-6.09-10-11.804-10h-8c-6.393 0-12 5.607-12 12v40c0 6.393 5.607 12 12 12z"></path>
+                  <path fill="#080" clip-path="url(#level-indicator)" d="m52 38v14c0 9.757-8.242 18-18 18h-8c-9.757 0-18-8.243-18-18v-14h-8v14c0 14.094 11.906 26 26 26v14h-17v8h42v-8h-17v-14c14.094 0 26-11.906 26-26v-14h-8z"></path>
+                  <path fill="#080" clip-path="url(#level-indicator)" d="m26 64h8c5.714 0 10.788-4.483 11.804-10h-11.887v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h12.083v-4h-12.083v-4h11.887c-1.016-5.517-6.09-10-11.804-10h-8c-6.393 0-12 5.607-12 12v40c0 6.393 5.607 12 12 12z"></path>
+                </svg>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Apply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="select-camera" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="select-camera-label" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="select-camera-label">Camera</h5>
+              </div>
+              <div class="modal-body" style="text-align: center">
+                <select style="width: 100%"></select>
+                <video autoplay muted playsInline style="margin: 10px 0; width: 60%"></video>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Apply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="join-room" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="join-room-label" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="join-room-label">Video Chat</h5>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label id="room-name-label" for="room-name">Room Name</label>
+                  <input id="room-name" class="form-control" type="text" />
+                </div>
+                <div class="form-group">
+                  <label id="screen-name-label" for="screen-name">User Name</label>
+                  <input id="screen-name" class="form-control" type="text" />
+                </div>
+                <div class="alert alert-warning" role="alert">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-dark">Change Microphone and Camera</button>
+                <button type="button" class="btn btn-primary">Join</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal fade" id="show-error" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="show-error-label" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="show-error-label">Error</h5>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Chat window--> <!-- End chat window--> <!--
+      <div class="card">
+        <div class="chat card-block">
+          <div id="p1-chat-log" class="card-block">
+
+          </div>
+          <form name="message" class="col-sm-12" id="p1-form">
+            <input name="p1-text" type="text" id="p1-usermsg" placeholder="Message" value=""/>
+            <button id="P1-msg-submit" type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        </div>
+      </div> -->
+      
+       <!-- Screenshot taken, Added by Abhay -->
+       <div class="modal" id="download-snapshot" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h4 class="card-title">Snapshot taken</h4>
+              <img id="imageElement" class="img-fluid" alt="Image">
+            </div>
+            <div class="modal-footer">
+              <button id="downloadBtn" type="button" class="btn btn-primary">Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End-->
+      
+      <!-- Chat, Screen Share and Snapshot, Added by Abhay -->
+      <div class="col-12 text-center">
+        <!-- HTML !-->
+        <!--<button class="button-1" role="button">Button 90</button>-->
+        <!--Chat button with image-->
+        <!--<button id="chatBtn" class="button-1">
+          <span>
+          <div class="jss156"><svg width="30" height="17" viewBox="0 0 19 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 1C0 0.723858 0.223858 0.5 0.5 0.5H18.5C18.7761 0.5 19 0.723858 19 1V13C19 13.2761 18.7761 13.5 18.5 13.5H9.3096L6.32421 16.361C6.1796 16.4996 5.96624 16.5385 5.78202 16.4599C5.59779 16.3813 5.47826 16.2003 5.47826 16V13.5H0.5C0.223858 13.5 0 13.2761 0 13V1ZM1 1.5V12.5H5.97826C6.2544 12.5 6.47826 12.7239 6.47826 13V14.8283L8.76274 12.639C8.85583 12.5498 8.97977 12.5 9.1087 12.5H18V1.5H1Z" fill="#707578"></path></svg><div class="jss159"></div><div class="jss157"></div></div>
+          Chat
+        </span>
+        </button>-->
+        
+        <!--<button id="chatBtn" class="btn" style="border: 1px solid black;"><i class="fa-regular fa-message"></i></button>-->
+        <button id="chatBtn" class="button-1">Chat</button>
+        <button id="screenShare" class="button-1">Share Your Screen</button>
+        <button id="takesnapshot" class="button-1">Take a Video Snapshot</button>
+        <button id="bandwidthBtn" class="button-1">Bandwidth Constraints</button>
+        <!-- <button id="bandwidth" class="btn btn-primary">Set Bandwidth Constraints</button> -->
+
+        <!-- Audi/Video controller-->
+        <button id="muteAudio" class="btn" style="background-image: linear-gradient(-180deg, #37ADB2, #329CA0);box-shadow: 0 0 0 0.2rem #fff;"><i class="fa-solid fa-microphone"></i></button>
+        <div class="btn-group">
+          <button id="muteVideo" class="btn" style="background-image: linear-gradient(-180deg, #37ADB2, #329CA0);box-shadow: 0 0 0 0.2rem #fff;"><i class="fa-solid fa-video"></i></button>
+          <!--<button type="button" style="border: 1px solid black;" class="btn btn-dark dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" id="dropdown-nofilter" type="button">No Filter</button>
+            <button class="dropdown-item" id="dropdown-blackAndWhite" type="button">Black and White</button>
+            <button class="dropdown-item" type="button" id="dropdown-blur">Blur</button>
+            <button class="dropdown-item" type="button" id="dropdown-image">Image</button>
+          </div>-->
+        </div>
+      </div>
+      <!-- End -->
+
+      <!-- Start Chat window, added by Abhay-->
+      <!-- Chat Modal(Data Track) -->
+      <div class="modal fade" id="chatModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Twilio Chat</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+      
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="chat-messages" id="chat-messages">
+                <ul style="list-style-type: none" id="pings"></ul>
+              </div>
+              <div class="input-group mb-3">
+                <input id="messageInput" type="text" class="form-control" placeholder="Type your message">
+                <div class="input-group-append">
+                  <button id="sendMessage" class="btn btn-primary send-message" type="button">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Chat window -->
+      <!-- Start Bandwidth Constraints window, added by Abhay-->
+      <div class="modal fade" id="bandwidthModal">
+        <div class="modal-dialog">
+          <div class="modal-content col-sm-12">
+            <div class="modal-header">
+              <h4 class="modal-title">Bandwidth Constraints</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Participant's Media</h4>
+                <div id="audiowaveform"></div>
+                <audio id="audiopreview" autoplay></audio>
+                <video id="videopreview" autoplay></video>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Select Bandwidth Constraints</h4>
+                <form>
+                  <div class="form-group">
+                    <label class="form-text text-muted">Max Audio Bitrate (bps)</label>
+                    <select id="maxaudiobitrate" name="maxaudiobitrate" class="form-control">
+                      <option value="">No limit</option>
+                      <option value="16000">16000</option>
+                      <option value="32000">32000</option>
+                      <option value="64000">64000</option>
+                    </select>
+                    <div id="audiobitrategraph" class="bitrategraph">
+                      <canvas id="audiobitratecanvas"></canvas>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-text text-muted">Max Video Bitrate (bps)</label>
+                    <select id="maxvideobitrate" name="maxvideobitrate" class="form-control">
+                      <option value="">No limit</option>
+                      <option value="64000">64000</option>
+                      <option value="128000">128000</option>
+                      <option value="256000">256000</option>
+                      <option value="512000">512000</option>
+                    </select>
+                    <div id="videobitrategraph" class="bitrategraph">
+                      <canvas id="videobitratecanvas"></canvas>
+                    </div>
+                  </div>
+                  <input id="connectordisconnect" type="submit" class="btn btn-primary btn-block" value="Connect to Room">
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Bandwidth Constraints window -->
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
